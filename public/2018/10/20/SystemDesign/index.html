@@ -1,0 +1,273 @@
+<!DOCTYPE html><html><head><meta name="generator" content="Hexo 3.8.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="be a bird, feather matters"><title>System Design Note | Drew's Tahiti</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/normalize/8.0.1/normalize.min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//lib.baomitu.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script><link rel="icon" mask sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">System Design Note</h1><a id="logo" href="/.">Drew's Tahiti</a><p class="description"></p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> Start</i></a><a href="/archives/"><i class="fa fa-archive"> Archiv</i></a><a href="/about/"><i class="fa fa-user"> Über</i></a><a href="/atom.xml"><i class="fa fa-rss"> RSS</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">System Design Note</h1><div class="post-meta">Oct 20, 2018<span> | </span><span class="category"><a href="/categories/System-Design/">System Design</a></span></div><div class="post-content"><h1 id="Web-failure-rate-analysis（divide-and-conquer-）"><a href="#Web-failure-rate-analysis（divide-and-conquer-）" class="headerlink" title="Web failure rate analysis（divide and conquer ）"></a>Web failure rate analysis（divide and conquer ）</h1><table>
+<thead>
+<tr>
+<th>failure rate</th>
+<th>DNS</th>
+<th style="text-align:left">Web</th>
+<th>Player</th>
+<th>MP3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>17</td>
+<td>1</td>
+<td style="text-align:left">7</td>
+<td>3</td>
+<td>6</td>
+</tr>
+<tr>
+<td>15</td>
+<td>1</td>
+<td style="text-align:left">4</td>
+<td>3</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<h2 id="web"><a href="#web" class="headerlink" title="web"></a>web</h2><h3 id="1-Too-many-users-and-requests-to-handle"><a href="#1-Too-many-users-and-requests-to-handle" class="headerlink" title="1. Too many users and requests to handle"></a>1. Too many users and requests to handle</h3><p>Solution: </p>
+<ul>
+<li>Reverse proxy with more servers(dispatcher, cache, package)</li>
+<li>Reduce the size of webpage (simplify content 10%, compress/merge images 40%, lazy load 70%)</li>
+<li>More cacheable pages (change dynamic webpage into static webpage) </li>
+</ul>
+<p><strong>there will still some rate of failure on web that we could not reduce. Reason: Crazy user are not patient to wait and click too often</strong></p>
+<p><strong>CDN(Content Delivery Network)</strong></p>
+<h2 id="rate-limit"><a href="#rate-limit" class="headerlink" title="rate limit"></a>rate limit</h2><h3 id="1-Algorithm-of-gap"><a href="#1-Algorithm-of-gap" class="headerlink" title="1. Algorithm of gap"></a>1. Algorithm of gap</h3><p>make sure the gap between two request &gt;= 0.2, then we could tell that ups will less than 5.</p>
+<h3 id="2-Algorithm-of-time-bucket"><a href="#2-Algorithm-of-time-bucket" class="headerlink" title="2. Algorithm of time-bucket"></a>2. Algorithm of time-bucket</h3><p>make sure every second have n request.</p>
+<ul>
+<li>Use database</li>
+<li>not use database(set a counter) </li>
+</ul>
+<h3 id="3-Algorithm-of-requestList"><a href="#3-Algorithm-of-requestList" class="headerlink" title="3. Algorithm of requestList"></a>3. Algorithm of requestList</h3><p>Find the fifth old packet and caculate the time diff, it should be large than 1s.</p>
+<p>put each request in Queue,</p>
+<p>Optimsize: circle queue</p>
+<p><strong>Follow up:</strong></p>
+<p>How to save space with 10^9 query per hour? </p>
+<p>Batch queries</p>
+<p>how to support multiple threads?</p>
+<p>lock</p>
+<p>Producer/conductor</p>
+<p>how tp support limiter on users?</p>
+<p>&lt;uid, requestList&gt;</p>
+<p>how to support query with different quotas?</p>
+<p><strong>Token Bucket: space complexity O(1)</strong>??????????</p>
+<h1 id="秒杀"><a href="#秒杀" class="headerlink" title="秒杀"></a>秒杀</h1><ul>
+<li>时间 </li>
+<li>items</li>
+<li>qps</li>
+</ul>
+<p>Target: keep working in good suitation</p>
+<p>传统四层代理：</p>
+<p>browser, ISP proxy, reverse proxy, load balance </p>
+<p>解法二： </p>
+<p>二级队列： 一级队列放行一些人，顶冲击流量，二级队列排序</p>
+<p>how to reduce traffic?</p>
+<ul>
+<li>reduce page size: no image</li>
+<li>cache more: static page</li>
+<li>Proxy: batch, connection</li>
+<li>Limit request: JS, balancer</li>
+</ul>
+<p>how to keep it simple, sweetie?</p>
+<ul>
+<li>no DB: memory + log</li>
+<li>no lock</li>
+</ul>
+<p>how to isolate itself?</p>
+<ul>
+<li>new server</li>
+<li>Asynchronous</li>
+</ul>
+<p>how to defend?</p>
+<ul>
+<li>IP</li>
+<li>captcha</li>
+</ul>
+<p>Lottery algorithm</p>
+<h1 id="Distributed-System"><a href="#Distributed-System" class="headerlink" title="Distributed System"></a>Distributed System</h1><ul>
+<li>Design distributed file system and database(bigtable)</li>
+<li>Calculate word appearance/ inverted index/ anagrams with map reduce </li>
+</ul>
+<h3 id="design-search-engine"><a href="#design-search-engine" class="headerlink" title="design search engine"></a>design search engine</h3><p>Google three key: map reduce / Bigtable/ GFS</p>
+<p><strong>not recite details of papers, but find a suitable solution under a scenario</strong> </p>
+<p>how to save file?</p>
+<ul>
+<li>Disk: (metadata(fileinfo, index), bolcks:())</li>
+</ul>
+<p>how to save a large file?</p>
+<ul>
+<li>blocks 变大</li>
+</ul>
+<p>how to save an extra-large file?</p>
+<ul>
+<li>master save metadata(only server, not offset), many chunk servers(take care offset itself)</li>
+</ul>
+<p>单点失败解决方法：热备份， master任务减少（GFS only one master）</p>
+<p>How to find file is broken?</p>
+<ul>
+<li>Checksum put in memory.</li>
+</ul>
+<p>how to avoid the loss of data when a chunkserver is down?</p>
+<ul>
+<li>Replicate the chunks, 2 more copy.</li>
+</ul>
+<p>how to select chunkservers of a chunk? (启发式)</p>
+<ul>
+<li><p>Server with below-average disk space utilization</p>
+</li>
+<li><p>limited number of “recent” creation</p>
+</li>
+<li><p>Across racks:2+1</p>
+</li>
+</ul>
+<p>how to recover when a chunk is broken?</p>
+<ul>
+<li>ask master for help(just to ask for the chunkerver number)</li>
+</ul>
+<p>how to find whether a chunkserver is down?</p>
+<ul>
+<li>master keep a chunkservers live log(chunkserver send live message to master, heartbeat, master update record) </li>
+</ul>
+<p>how to recover when a chunkserver is down?</p>
+<ul>
+<li>master keep a repair procedure list. (Repair priority is based on the number of replications)</li>
+</ul>
+<p>how to avoid hot spot?</p>
+<ul>
+<li>master have a rebalance procedure, record chunk access frequency, replicate a chunk into more replications when it busy</li>
+<li>fill the chunkserver with more space and more bandwidth.</li>
+</ul>
+<p>how to read from file?</p>
+<ul>
+<li>ask master for the file chunkserver</li>
+<li>then go to the chunkserver to read the file</li>
+</ul>
+<p>how to write into a file?</p>
+<ul>
+<li>ask master where is chunk, master tell the primary chunkserver and replicas chunkserver</li>
+<li>Cache file data from user into chunkserver then chunkservers send data to each other.</li>
+<li>Primary chunkserver tell each replicas to write data into disk.</li>
+</ul>
+<h3 id="BigTable"><a href="#BigTable" class="headerlink" title="BigTable"></a>BigTable</h3><p>how to save a large table?</p>
+<ul>
+<li>metadata of table-&gt; table</li>
+</ul>
+<p>how to save a extra-large table?</p>
+<ul>
+<li>Metadata of table -&gt; table -&gt; ssTable</li>
+</ul>
+<p>how to write into a table? (Task: add(b, yeah))</p>
+<ul>
+<li>write into memory first (sstable could not be modified)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Memory</th>
+<th>GFS/Disk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>table0</td>
+<td>sstable0</td>
+</tr>
+</tbody>
+</table>
+<p>what if men table is too large?</p>
+<ul>
+<li>When men is full, dump it into disk.</li>
+</ul>
+<p>how to avoid system failure?</p>
+<ul>
+<li>wirte log</li>
+</ul>
+<p>how to read data?</p>
+<ul>
+<li>Data is ordered inside a sstable</li>
+<li>data is disordered outside sstables</li>
+</ul>
+<p>how to read fast?</p>
+<ul>
+<li>build index, put index into memory</li>
+<li>bloomfilter(), can tell data not in this block for sure, tell data in this block possibly, extra check needed.</li>
+</ul>
+<p><strong>how to build bloom filter?</strong></p>
+<p>how to save a table into GFS?</p>
+<p><strong><em>key, value is the core of database</em></strong></p>
+<p>Key = (row, column, time)</p>
+<h2 id="Design-Twitter-Instagram-Facebook"><a href="#Design-Twitter-Instagram-Facebook" class="headerlink" title="Design Twitter/Instagram/Facebook"></a>Design Twitter/Instagram/Facebook</h2><p><em>product hunt</em> web</p>
+<h3 id="design-twitter"><a href="#design-twitter" class="headerlink" title="design twitter"></a>design twitter</h3><p>Q: User case</p>
+<p>A: post twtte/ read feed line/ repost / follow/ comment/ like/</p>
+<p>Q: Necessaries</p>
+<p>A: </p>
+<ul>
+<li><p>read timeline: QPS 300K/ </p>
+</li>
+<li><p>write twtte: QPS = 5K</p>
+</li>
+<li>Notify: 1 M followers within 1s</li>
+<li>Concurrent users = 150m</li>
+<li>Daily tweets 400m</li>
+</ul>
+<h5 id="Application"><a href="#Application" class="headerlink" title="Application"></a>Application</h5><p>Q: how to write a tweet</p>
+<p>A: push model</p>
+<p>Social graph ——|</p>
+<p>Write API -&gt; find out -&gt; timeline list</p>
+<p>Q: how to read timeline</p>
+<p>A: timeline service read O(1)</p>
+<p>Q: how to deal with the storm of lady gaga?</p>
+<p> A: A big star write a tweet and you will need to send very much data to many follower. <strong>We could only notify online users</strong> or we could use <strong>pull mode</strong> </p>
+<p>Q: pull mode</p>
+<p>A: write in O(1) -&gt; social graph -&gt; read timeline</p>
+<p>Q: how to deal with Architect of the MATRIX </p>
+<p>A: push &amp; pull mode</p>
+<p>Q: how to choose pull and push</p>
+<p>A: </p>
+<ul>
+<li>Understand specific scenario</li>
+<li>Balance between your latency, computation &amp; storage</li>
+<li>O(n) is not workable</li>
+<li>Real time with terrible QPS needs pull</li>
+<li>Simplicity asks to focus on one</li>
+</ul>
+<p>Q: speed up</p>
+<p>A: </p>
+<ul>
+<li>put data into memory</li>
+</ul>
+<p>Q: save space</p>
+<p>A: </p>
+<ul>
+<li>only cache for the users who is active within 1 week</li>
+<li>only cache the latest 800 tweets</li>
+<li>only save twtte id in memory</li>
+</ul>
+<p>Q: how to deal with cache miss</p>
+<p>A: timeline builder(load from disk and append to memory)</p>
+<p>Q: how to save the tweetlisttable on disk</p>
+<p>A: split data into chunk and save by time decreasing. </p>
+<p>Q: how to support search?</p>
+<h3 id="chat"><a href="#chat" class="headerlink" title="chat"></a>chat</h3><p>Q: data structure</p>
+<p>A: user table/ friend table/ Channel table / Message table</p>
+<p>Q: how to choose the storage</p>
+<p>A: SQL: RelationShip/ Edit/ correct/ Transaction/ Combination state</p>
+<p>NoSQL: K/V pair, Append, tolerant/ performance/ Sequential record</p>
+<h4 id="Chat-architecture"><a href="#Chat-architecture" class="headerlink" title="Chat architecture:"></a>Chat architecture:</h4><p>Batch message/ compress message </p>
+<p>Delay change/ buffer</p>
+<h2 id="Typeahead"><a href="#Typeahead" class="headerlink" title="Typeahead"></a>Typeahead</h2><p>Necessaries：</p>
+<ul>
+<li>average latency &lt; 100ms</li>
+<li>95% &lt; 50ms</li>
+</ul>
+<p>Algorithm： binary tree/ trie tree/ </p>
+<p>Select * from table where name like ‘“.$query.” %’ order by name ASC</p>
+<h4 id="Architecture"><a href="#Architecture" class="headerlink" title="Architecture:"></a>Architecture:</h4><p>Browser &lt;- Aggregator &lt;- many {personalized ranking/ Global ranking}</p>
+<h5 id="speed-up"><a href="#speed-up" class="headerlink" title="speed up"></a>speed up</h5><ul>
+<li>memory</li>
+<li>multi-level cache</li>
+<li>save content id not detail</li>
+<li></li>
+</ul>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/2018/11/13/Singleton Pattern/">Singleton Pattern</a><a class="next" href="/2018/10/10/October-2/">LeetCode Note Oct-2</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="https://zhangyuzhu13.github.io"></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> Kategorien</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Algorithm/">Algorithm</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/System-Design/">System Design</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/life/">life</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> Tags</i></div><div class="tagcloud"><a href="/tags/factory/" style="font-size: 15px;">factory</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/multithreading/" style="font-size: 15px;">multithreading</a> <a href="/tags/observer-pattern/" style="font-size: 15px;">observer pattern</a> <a href="/tags/prototype/" style="font-size: 15px;">prototype</a> <a href="/tags/proxy/" style="font-size: 15px;">proxy</a> <a href="/tags/singleton/" style="font-size: 15px;">singleton</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> Letzte</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2019/01/14/Prepare for Google Onsite/">Prepare for Google Onsite</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/12/17/Unique Path Problem/">Unique Path Problem</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/27/Proxy Pattern/">Proxy Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/19/Observer Pattern/">Observer Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/19/Modern Family/">Modern Family</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/18/Tiny Point/">Tiny Point</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/15/Factory Pattern/">Factory Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/14/Multithreading/">Multithreading in Java ——Synchronized</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/14/Prototype Pattern/">Prototype Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/13/Singleton Pattern/">Singleton Pattern</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> Blogroll</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2019 <a href="/." rel="nofollow">Drew's Tahiti.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//lib.baomitu.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/fancybox/3.5.2/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

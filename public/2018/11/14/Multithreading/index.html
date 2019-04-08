@@ -1,0 +1,82 @@
+<!DOCTYPE html><html><head><meta name="generator" content="Hexo 3.8.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="be a bird, feather matters"><title>Multithreading in Java ——Synchronized | Drew's Tahiti</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/normalize/8.0.1/normalize.min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//lib.baomitu.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script><link rel="icon" mask sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Multithreading in Java ——Synchronized</h1><a id="logo" href="/.">Drew's Tahiti</a><p class="description"></p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> Start</i></a><a href="/archives/"><i class="fa fa-archive"> Archiv</i></a><a href="/about/"><i class="fa fa-user"> Über</i></a><a href="/atom.xml"><i class="fa fa-rss"> RSS</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Multithreading in Java ——Synchronized</h1><div class="post-meta">Nov 14, 2018<span> | </span><span class="category"><a href="/categories/Java/">Java</a></span></div><div class="post-content"><p>Thread safe is the key point in multithreading area. The reasons for multithreading problems are mainly on that: 1. Sharing resource/data 2. more than one threads operate the same data/resource. So in order to solve this problem, we need some technique to make sure only one thread operate the sharing data at the same time. In java, <strong>synchronized</strong> key word could work as we expected. Now we try to figure out how thie key word works.</p>
+<h3 id="Three-ways-to-use-synchronized-key-word"><a href="#Three-ways-to-use-synchronized-key-word" class="headerlink" title="Three ways to use synchronized key word"></a>Three ways to use synchronized key word</h3><p>The <em>synchronized</em> key word could be used in three ways. </p>
+<ol>
+<li>In instance method</li>
+<li>In static method</li>
+<li>In code block </li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadDemo</span> </span>&#123;</span><br><span class="line">    <span class="comment">// sharing data</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> counter = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// In instance method</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">()</span></span>&#123;</span><br><span class="line">        counter++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// In static method</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(<span class="keyword">int</span> n)</span></span>&#123;</span><br><span class="line">        counter -= n;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// In code block </span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">halve</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (counter % <span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">                counter *= <span class="number">2</span>;</span><br><span class="line">            &#125; </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="The-principle-of-synchronized"><a href="#The-principle-of-synchronized" class="headerlink" title="The principle of synchronized"></a>The principle of synchronized</h3><p>As we know java is a Objected-Oriented language. Everything in java is object. The class is actually an object, we call it class object. Everytime we use synchronized key word, the thread will try to get the object lock before execute the relevant code. The thread which gain the object lock will execute the code, others will keep waiting until gain the lock. This then could make sure no multithread safe problems. </p>
+<p>Now we talk about the object lock. In java, every object has three parts in memory: object head, instance variable, padding data. The object lock are based on the object head and the monitor object.</p>
+<h4 id="object-head"><a href="#object-head" class="headerlink" title="object head"></a>object head</h4><p>JVM use 2 byte to save object head. (Array object will has 3 byte, the additional one is used to save the length of array). The first byte is called <em>Mark Word</em>. It usually contains hashcode, age of object, lock info.</p>
+<table>
+<thead>
+<tr>
+<th>lock status</th>
+<th>25 bit</th>
+<th>4 bit</th>
+<th>1 bit</th>
+<th>2 bit lock flag bit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>no lock</td>
+<td>Hashcode</td>
+<td>Age</td>
+<td>Is biased locking</td>
+<td>01</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Lightweight locking</th>
+<th>Pointer to lock record in stack</th>
+<th>00</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Heavyweight locking</td>
+<td>pointer to mutex lock</td>
+<td>10</td>
+</tr>
+<tr>
+<td>GC sign</td>
+<td>None</td>
+<td>11</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>biased locking</th>
+<th>thread ID(23 bit)</th>
+<th>Epoch(2 bit)</th>
+<th>age</th>
+<th>1</th>
+<th>01</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>In the Heavyweight locking, which is usually the object lock <em>synchronized</em> key word used, the pointer in object head points to monitor of current object. Every object has a monitor. Different JVM implement the monitor in different ways. But the basic idea are common. The <em>synchronized</em> first read from object head to find the pointer of monitor then use the monitor as the lock to keep the multithread program safe. The wait()/ notify()/ notifyAll() method which are in the Object class  keep the multithread safe in the same way.</p>
+<p>There are little difference between the three ways in the low level. </p>
+<p><em>In code block</em> way use <strong>monitorenter</strong> and <strong>monitorexit</strong> instruction directly. The other two ways set ACC_SYNCHRONIZED flag on the method_info Structure in JVM method constants pool. And every time execute the method, thread will first check this flag and if it’s settled, thread will try to gain the monitor first.</p>
+<p>By the way, <strong>the monitor lock is reentrant</strong>. If a method gain the lock, it could also gain the lock in this method. </p>
+<h3 id="Optimsization-of-Synchronized"><a href="#Optimsization-of-Synchronized" class="headerlink" title="Optimsization of Synchronized"></a>Optimsization of Synchronized</h3><h4 id="biased-locking"><a href="#biased-locking" class="headerlink" title="biased locking"></a>biased locking</h4><p>Sometimes the lock is requested by the same thread. In biased locking status, no other synchronize operation need to do. If this fail, the lock will turn into Lightweight locking.</p>
+<h4 id="Lightweight-locking"><a href="#Lightweight-locking" class="headerlink" title="Lightweight locking"></a>Lightweight locking</h4><p>This locking are based on the idea that in most time, the thread will keep the lock and finish the task without other thread request the same lock. No competition happens. If this fail, the lock will turn into Spin lock.</p>
+<h4 id="Spin-lock"><a href="#Spin-lock" class="headerlink" title="Spin lock"></a>Spin lock</h4><p>Before turn into Heavyweight locking, JVM will spin for some time in order to gain the lock, if thread could gain the lock at this time, it will not hang the thread in OS  level which could save much time. </p>
+<h4 id="Lock-Elision"><a href="#Lock-Elision" class="headerlink" title="Lock Elision"></a>Lock Elision</h4><p>No meaning locks will be deleted to save time. </p>
+</div><div class="tags"><a href="/tags/java/">java</a><a href="/tags/multithreading/">multithreading</a></div><div class="post-nav"><a class="pre" href="/2018/11/15/Factory Pattern/">Factory Pattern</a><a class="next" href="/2018/11/14/Prototype Pattern/">Prototype Pattern</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="https://zhangyuzhu13.github.io"></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> Kategorien</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Algorithm/">Algorithm</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/System-Design/">System Design</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/life/">life</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> Tags</i></div><div class="tagcloud"><a href="/tags/factory/" style="font-size: 15px;">factory</a> <a href="/tags/java/" style="font-size: 15px;">java</a> <a href="/tags/multithreading/" style="font-size: 15px;">multithreading</a> <a href="/tags/observer-pattern/" style="font-size: 15px;">observer pattern</a> <a href="/tags/prototype/" style="font-size: 15px;">prototype</a> <a href="/tags/proxy/" style="font-size: 15px;">proxy</a> <a href="/tags/singleton/" style="font-size: 15px;">singleton</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> Letzte</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2019/01/14/Prepare for Google Onsite/">Prepare for Google Onsite</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/12/17/Unique Path Problem/">Unique Path Problem</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/27/Proxy Pattern/">Proxy Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/19/Observer Pattern/">Observer Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/19/Modern Family/">Modern Family</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/18/Tiny Point/">Tiny Point</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/15/Factory Pattern/">Factory Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/14/Multithreading/">Multithreading in Java ——Synchronized</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/14/Prototype Pattern/">Prototype Pattern</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/11/13/Singleton Pattern/">Singleton Pattern</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> Blogroll</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2019 <a href="/." rel="nofollow">Drew's Tahiti.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//lib.baomitu.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/fancybox/3.5.2/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
